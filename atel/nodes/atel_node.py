@@ -1,20 +1,4 @@
-from gensim.models import Word2Vec
-from enum import Enum
 import collections
-
-class Atel(object):
-  def __init__(self, model_location):
-    self.model = Word2Vec.load_word2vec_format(model_location, binary=True)
-
-  def word(self, word):
-    return PositiveNode(self, None, word)
-
-  def most_similar(self, n, **kwargs):
-    results = (self.word(r[0]) for r in self.model.most_similar(topn=n, **kwargs))
-    if n == 1:
-      return next(results)
-    else:
-      return results
 
 
 class AtelNode(object):
@@ -49,7 +33,7 @@ class AtelNode(object):
       self.next.last = None
       self.next = None
 
-  def simplify(self):
+  def _simplify(self):
     words = collections.defaultdict(set)
     nodes = collections.defaultdict(list)
     end = self
@@ -71,6 +55,9 @@ class AtelNode(object):
 
     return end
 
+  def simplify(self):
+    return self.copy_chain()._simplify()
+
   def __add__(self, word):
     return self.plus(word)
 
@@ -88,6 +75,16 @@ class AtelNode(object):
   def evaluate(self):
     return self.simplify().root.most_similar(1, **self.kwargs())
 
+  def copy(self, last=None):
+    return self.__class__(self.root, last, self.word)
+
+  def copy_chain(self):
+    if self.last:
+      end_of_chain = self.last.copy_chain()
+      return self.copy(last=end_of_chain)
+    else:
+      return self.copy()
+
   def __str__(self):
     if self.last:
       return '{last} {current}'.format(last=str(self.last), current=repr(self))
@@ -97,40 +94,6 @@ class AtelNode(object):
   def __eq__(self, other):
     return isinstance(other, self.__class__) and self.word == other.word
 
-class NodeType(Enum):
-  POSITIVE = 'positive'
-  NEGATIVE = 'negative'
 
-class PositiveNode(AtelNode):
-  @property
-  def key(self):
-    return NodeType.POSITIVE.value
-
-  @property
-  def opposite(self):
-    return NodeType.NEGATIVE.value
-
-  def __repr__(self):
-    if self.last:
-      return '+ ' + self.word
-    else:
-      return self.word
-
-class NegativeNode(AtelNode):
-  @property
-  def key(self):
-    return NodeType.NEGATIVE.value
-
-  @property
-  def opposite(self):
-    return NodeType.POSITIVE.value
-
-  def __repr__(self):
-    return '- ' + self.word
-
-if __name__ == '__main__':
-  model_location = "/Users/yasyf/Downloads/GoogleNews-vectors-negative300.bin"
-  atel = Atel(model_location)
-  demo = atel.word('king').minus('male').plus('female').plus('foo').minus('foo')
-  print(str(demo.simplify()))
-  print(demo.evaluate())
+from positive_node import PositiveNode
+from negative_node import NegativeNode
