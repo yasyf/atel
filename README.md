@@ -1,9 +1,9 @@
 ```python
   atel = Atel(model_location)
-  demo = atel.word('king').minus('male').plus('female').plus('foo').minus('foo')
-  print(str(demo)) 
+  demo = atel.wrap('king') - 'male' + 'female' + 'foo' - 'foo'
+  print(demo)
   # king - male + female + foo - foo
-  print(str(demo.simplify()))
+  print(demo.simplify())
   # king - male + female
   print(demo.evaluate())
   # queen

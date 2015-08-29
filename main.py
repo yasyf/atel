@@ -1,15 +1,17 @@
+import sys
 from atel import Atel, MockAtel
 
-DEMO = False
-
 if __name__ == '__main__':
-  if DEMO:
-    atel = MockAtel()
-  else:
-    model_location = "/Users/yasyf/Downloads/GoogleNews-vectors-negative300.bin"
+  try:
+    model_location = sys.argv[1]
     atel = Atel(model_location)
+  except IndexError:
+    atel = MockAtel()
 
-  demo = atel.word('king').minus('male').plus('female').plus('foo').minus('foo')
-  print(str(demo.simplify()))
-  print(str(demo))
+  demo = atel.wrap('king') - 'male' + 'female' + 'foo' - 'foo'
+  print(demo)
+  # king - male + female + foo - foo
+  print(demo.simplify())
+  # king - male + female
   print(demo.evaluate())
+  # queen

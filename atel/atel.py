@@ -9,6 +9,9 @@ class Atel(object):
   def word(self, word):
     return PositiveNode(self, None, word)
 
+  def wrap(self, word):
+      return self.word(word)
+
   def most_similar(self, n, **kwargs):
     results = (self.word(r[0]) for r in self.model.most_similar(topn=n, **kwargs))
     if n == 1:
