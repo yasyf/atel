@@ -1,5 +1,7 @@
 import collections
 
+class DivideByError(RuntimeError):
+  pass
 
 class AtelNode(object):
   def __init__(self, root, last, word):
@@ -16,6 +18,23 @@ class AtelNode(object):
 
   def minus(self, word):
     return NegativeNode(self.root, self, word)
+
+  def reverse_multiply(self, word):
+    def reverse_multiply_node(node):
+      node.word = word + node.word
+    return self.copy_chain_and_do(reverse_multiply_node)
+
+  def multiply(self, word):
+    def multiply_node(node):
+      node.word = node.word + word
+    return self.copy_chain_and_do(multiply_node)
+
+  def divide(self, word):
+    def divide_node(node):
+      if word not in node.word:
+        raise DivideByError(word)
+      node.word = node.word.replace(word, '', 1)
+    return self.copy_chain_and_do(divide_node)
 
   def replace(self, remove, add):
     return self.minus(remove).plus(add)
@@ -58,12 +77,6 @@ class AtelNode(object):
   def simplify(self):
     return self.copy_chain()._simplify()
 
-  def __add__(self, word):
-    return self.plus(word)
-
-  def __sub__(self, word):
-    return self.minus(word)
-
   def kwargs(self):
     if self.last:
       kwargs = self.last.kwargs()
@@ -79,11 +92,32 @@ class AtelNode(object):
     return self.__class__(self.root, last, self.word)
 
   def copy_chain(self):
+    return self.copy_chain_and_do(lambda n: n)
+
+  def copy_chain_and_do(self, fn):
     if self.last:
-      end_of_chain = self.last.copy_chain()
-      return self.copy(last=end_of_chain)
+      end_of_chain = self.last.copy_chain_and_do(fn)
+      copy = self.copy(last=end_of_chain)
     else:
-      return self.copy()
+      copy = self.copy()
+
+    fn(copy)
+    return copy
+
+  def __add__(self, word):
+    return self.plus(word)
+
+  def __sub__(self, word):
+    return self.minus(word)
+
+  def __mul__(self, word):
+    return self.multiply(word)
+
+  def __rmul__(self, word):
+    return self.reverse_multiply(word)
+
+  def __div__(self, word):
+    return self.divide(word)
 
   def __str__(self):
     if self.last:
