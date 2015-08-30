@@ -86,9 +86,13 @@ class AtelNode(object):
     kwargs[self.key].append(self.word)
     return kwargs
 
-  def evaluate(self):
+  def evaluate(self, ignore_similar=False):
     kwargs = self.kwargs()
-    return self.simplify().root.most_similar_without_words(kwargs[NodeType.POSITIVE.value], **kwargs)
+    root = self.simplify().root
+    if ignore_similar:
+      return root.most_similar_without_words(kwargs[NodeType.POSITIVE.value], **kwargs)
+    else:
+      return root.most_similar(1, **kwargs())
 
   def copy(self, last=None):
     return self.__class__(self.root, last, self.word)
