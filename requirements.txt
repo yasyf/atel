@@ -3,6 +3,7 @@ bz2file==0.98
 Cython==0.23.1
 enum34==1.0.4
 gensim==0.12.1
+nltk==3.0.4
 numpy==1.9.2
 scipy==0.16.0
 six==1.9.0

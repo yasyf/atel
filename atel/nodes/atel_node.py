@@ -1,4 +1,5 @@
 import collections
+from atel.nodes import NodeType
 
 class DivideByError(RuntimeError):
   pass
@@ -86,7 +87,8 @@ class AtelNode(object):
     return kwargs
 
   def evaluate(self):
-    return self.simplify().root.most_similar(1, **self.kwargs())
+    kwargs = self.kwargs()
+    return self.simplify().root.most_similar_without_words(kwargs[NodeType.POSITIVE.value], **kwargs)
 
   def copy(self, last=None):
     return self.__class__(self.root, last, self.word)
